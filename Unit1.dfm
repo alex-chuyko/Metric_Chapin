@@ -13,7 +13,7 @@ object Form1: TForm1
   OldCreateOrder = False
   PixelsPerInch = 96
   TextHeight = 13
-  object mmo1: TMemo
+  object mmoInput: TMemo
     Left = 8
     Top = 8
     Width = 673
@@ -21,7 +21,7 @@ object Form1: TForm1
     ScrollBars = ssVertical
     TabOrder = 0
   end
-  object mmo3: TMemo
+  object mmoOutput: TMemo
     Left = 8
     Top = 576
     Width = 673
@@ -29,13 +29,13 @@ object Form1: TForm1
     ScrollBars = ssVertical
     TabOrder = 1
   end
-  object btn1: TButton
+  object btnRun: TButton
     Left = 696
     Top = 8
     Width = 75
     Height = 25
     Caption = 'Run'
     TabOrder = 2
-    OnClick = btn1Click
+    OnClick = btnRunClick
   end
 end

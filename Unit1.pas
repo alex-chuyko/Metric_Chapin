@@ -8,10 +8,10 @@ uses
 
 type
   TForm1 = class(TForm)
-    mmo1: TMemo;
-    mmo3: TMemo;
-    btn1: TButton;
-    procedure btn1Click(Sender: TObject);
+    mmoInput: TMemo;
+    mmoOutput: TMemo;
+    btnRun: TButton;
+    procedure btnRunClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -45,7 +45,7 @@ var
 begin
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
-  RegExp.RegEx := '\/\*.*?\*\/|\/\/.*?$';                            //
+  RegExp.RegEx := '\/\*.*?\*\/|\/\/.*?$';
   RegExp.Subject := str;
   RegExp.Compile;
   i := 0;
@@ -66,6 +66,26 @@ begin
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
   RegExp.RegEx := '\/\*.*?\*\/';                            
+  RegExp.Subject := str;
+  RegExp.Compile;
+  i := 0;
+  if RegExp.Match then
+  begin
+    repeat
+      delete(str, RegExp.MatchedOffset - i, RegExp.MatchedLength);
+      i := i + RegExp.MatchedLength;
+    until not RegExp.MatchAgain;
+  end;
+end;
+
+procedure deleteString(var str: string);
+var
+  i: integer;
+  RegExp : TPerlRegEx;
+begin
+  RegExp := TPerlRegEx.Create;
+  RegExp.Options := [preMultiLine];
+  RegExp.RegEx := '\".*?\"';                            
   RegExp.Subject := str;
   RegExp.Compile;
   i := 0;
@@ -107,12 +127,12 @@ begin
     while not Eof do
     begin
       readln(str);
-      Form1.mmo1.Text := Form1.mmo1.Text + str + #13 + #10;
+      Form1.mmoInput.Text := Form1.mmoInput.Text + str + #13 + #10;
     end;
     CloseFile(input);
   end;
   openDialog.Free;
-  str := Form1.mmo1.Text;
+  str := Form1.mmoInput.Text;
 end;                              //'((void|int|float|bool|short|unsigned\s+int)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(.*?)(?=(?:void|int|float|bool|short|unsigned\s+int)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(|$)';
 
 procedure breakingSubroutines(str : string; var arr: arrString; var count : integer);
@@ -515,7 +535,7 @@ end;
 
 
 
-procedure TForm1.btn1Click(Sender: TObject);
+procedure TForm1.btnRunClick(Sender: TObject);
 var
   i, count, countArrModVar: integer;
   str: string;
@@ -523,11 +543,12 @@ var
   P, M, C, T: integer;
   Q : Extended;
 begin
-  mmo1.Clear;
-  mmo3.Clear;
+  mmoInput.Clear;
+  mmoOutput.Clear;
   P := 0; M := 0; C := 0; T := 0; Q := 0;
 
   readFromFile(str);
+  deleteString(str);
   deleteComments1(str);
 
   for i:= 1 to length(str) do
@@ -545,7 +566,7 @@ begin
   end;
 
   Q := coeffP * P + coeffM * M + coeffC * C + coeffT * T;
-  mmo3.Text := mmo3.Text + 'P = ' + IntToStr(P) + '; ' + 'M = ' + IntToStr(M) + '; ' + 'C = ' + IntToStr(C) + '; ' + 'T = ' + IntToStr(T) + #13 + #10 + 'Q = ' + FloatToStr(Q);
+  mmoOutput.Text := mmoOutput.Text + 'P = ' + IntToStr(P) + '; ' + 'M = ' + IntToStr(M) + '; ' + 'C = ' + IntToStr(C) + '; ' + 'T = ' + IntToStr(T) + #13 + #10 + 'Q = ' + FloatToStr(Q);
 end;
 
 end.

@@ -38,118 +38,118 @@ implementation
 {$R *.dfm}
 
 /////////////////////// Additional Routines \\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-procedure deleteComments1(var str: string);
+procedure deleteComments1(var CodeString: string);
 var
-  i: integer;
+  LengthDeleteRow : integer;
   RegExp : TPerlRegEx;
 begin
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
   RegExp.RegEx := '\/\*.*?\*\/|\/\/.*?$';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
-  i := 0;
+  LengthDeleteRow := 0;
   if RegExp.Match then
   begin
     repeat
-      delete(str, RegExp.MatchedOffset - i, RegExp.MatchedLength);
-      i := i + RegExp.MatchedLength;
+      delete(CodeString, RegExp.MatchedOffset - LengthDeleteRow, RegExp.MatchedLength);
+      LengthDeleteRow := LengthDeleteRow + RegExp.MatchedLength;
     until not RegExp.MatchAgain;
   end;
 end;
 
-procedure deleteComments2(var str: string);
+procedure deleteComments2(var CodeString: string);
 var
-  i: integer;
+  LengthDeleteRow: integer;
   RegExp : TPerlRegEx;
 begin
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
   RegExp.RegEx := '\/\*.*?\*\/';                            
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
-  i := 0;
+  LengthDeleteRow := 0;
   if RegExp.Match then
   begin
     repeat
-      delete(str, RegExp.MatchedOffset - i, RegExp.MatchedLength);
-      i := i + RegExp.MatchedLength;
+      delete(CodeString, RegExp.MatchedOffset - LengthDeleteRow, RegExp.MatchedLength);
+      LengthDeleteRow := LengthDeleteRow + RegExp.MatchedLength;
     until not RegExp.MatchAgain;
   end;
 end;
 
-procedure deleteString(var str: string);
+procedure deleteString(var CodeString: string);
 var
-  i: integer;
+  LengthDeleteRow: integer;
   RegExp : TPerlRegEx;
 begin
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
   RegExp.RegEx := '\".*?\"';                            
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
-  i := 0;
+  LengthDeleteRow := 0;
   if RegExp.Match then
   begin
     repeat
-      delete(str, RegExp.MatchedOffset - i, RegExp.MatchedLength);
-      i := i + RegExp.MatchedLength;
+      delete(CodeString, RegExp.MatchedOffset - LengthDeleteRow, RegExp.MatchedLength);
+      LengthDeleteRow := LengthDeleteRow + RegExp.MatchedLength;
     until not RegExp.MatchAgain;
   end;
 end;
 
-procedure readFromFile(var str: string);
+procedure readFromFile(var CodeString: string);
 var
-  flagInput: boolean;
+  FlagInput: boolean;
   File1Name: string;
-  openDialog: TOpenDialog;
+  OpenDialog: TOpenDialog;
 begin
-  flagInput:= True;
-  openDialog := TOpenDialog.Create(openDialog);
-  openDialog.Title:= 'Выберите файл для открытия';
-  openDialog.InitialDir := GetCurrentDir;
-  openDialog.Options := [ofFileMustExist];
-  openDialog.Filter := 'Text file|*.txt';
-  openDialog.FilterIndex := 1;
-  if openDialog.Execute then
+  FlagInput:= True;
+  OpenDialog := TOpenDialog.Create(OpenDialog);
+  OpenDialog.Title:= 'Выберите файл для открытия';
+  OpenDialog.InitialDir := GetCurrentDir;
+  OpenDialog.Options := [ofFileMustExist];
+  OpenDialog.Filter := 'Text file|*.txt';
+  OpenDialog.FilterIndex := 1;
+  if OpenDialog.Execute then
   begin
-    File1Name:= openDialog.FileName;
+    File1Name:= OpenDialog.FileName;
   end
   else
     begin
       Application.MessageBox('Выбор файла для открытия остановлен!', 'Предупреждение!');
-      flagInput:=False;
+      FlagInput:=False;
     end;
-  if flagInput then
+  if FlagInput then
   begin
     AssignFile(input, File1Name);
     reset(input);
     while not Eof do
     begin
-      readln(str);
-      Form1.mmoInput.Text := Form1.mmoInput.Text + str + #13 + #10;
+      readln(CodeString);
+      Form1.mmoInput.Text := Form1.mmoInput.Text + CodeString + #13 + #10;
     end;
     CloseFile(input);
   end;
-  openDialog.Free;
-  str := Form1.mmoInput.Text;
+  OpenDialog.Free;
+  CodeString := Form1.mmoInput.Text;
 end;                              //'((void|int|float|bool|short|unsigned\s+int)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(.*?)(?=(?:void|int|float|bool|short|unsigned\s+int)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(|$)';
 
-procedure breakingSubroutines(str : string; var arr: arrString; var count : integer);
+procedure breakingSubroutines(CodeString : string; var arraySubroutines: arrString; var Quantity : integer);
 var
   RegExp : TPerlRegEx;
 begin
-  count := 0;
+  Quantity := 0;
   RegExp := TPerlRegEx.Create;
   RegExp.Options := [preMultiLine];
   RegExp.RegEx := '((void|int|float|bool|short|unsigned\s+int|char|double|\s)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(.*?)(?=(?:void|int|float|bool|short|unsigned\s+int)\s+[a-zA-Z_][a-zA-Z_\d]*\s*\(|$)';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
   if RegExp.Match then
   begin
     repeat
-      inc(count);
-      arr[count] := RegExp.MatchedText;
+      inc(Quantity);
+      arraySubroutines[Quantity] := RegExp.MatchedText;
     until not RegExp.MatchAgain;
   end;
 end;
@@ -158,62 +158,62 @@ end;
 
 
 /////////////////// search Mod. Variable \\\\\\\\\\\\\\\\\\\
-function checkArr(arr: arrString; count : integer; s : string): boolean;
+function checkRepeatVariables(arrayVariable: arrString; Quantity : integer; nameVariables : string): boolean;
 var
   flag : boolean;
   i: integer;
 begin
   flag := true;
-  for i:= 1 to count do
-    if s = arr[i] then
+  for i:= 1 to Quantity do
+    if nameVariables = arrayVariable[i] then
       flag := false;
-  checkArr := flag;
+  checkRepeatVariables := flag;
 end;
 
-function searchModVariable(str: string; var arr: arrString; var count: integer): integer;
+function searchModVariable(CodeString: string; var arrayModVariable: arrString; var Quantity: integer): integer;
 var
   RegExp: TPerlRegEx;
-  s : string;
+  nameVariables : string;
 begin
-  count := 0;
+  Quantity := 0;
   RegExp := TPerlRegEx.Create;
   RegExp.RegEx := '\b[a-zA-Z_]\w*(?=\s\=[\s\w]*)|[a-zA-Z_]\w*(?=\+\+|\-\-)|(?<=\+\+|\-\-)[a-zA-Z_]\w*|[a-zA-Z_]\w*(?=\s\+\=|\s\-\=|\s\*\=|\s\/\=)|\b[a-zA-Z_]\w*(?=\[{1}.{2,20}\=)';//'(?<=\s)[a-zA-Z_]\w*(?=\s\=[\s\w]*)|[a-zA-Z_]\w*(?=\+\+|\-\-)|(?<=\+\+|\-\-)[a-zA-Z_]\w*|[a-zA-Z_]\w*(?=\s\+\=|\s\-\=|\s\*\=|\s\/\=)';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
   if RegExp.Match then
   begin
     repeat
-      s := RegExp.MatchedText;
-      if checkArr(arr, count, s) then
+      nameVariables := RegExp.MatchedText;
+      if checkRepeatVariables(arrayModVariable, Quantity, nameVariables) then
       begin
-        inc(count);
-        arr[count] := s;
+        inc(Quantity);
+        arrayModVariable[Quantity] := nameVariables;
       end;
     until not RegExp.MatchAgain;
   end;
-  searchModVariable := count;
+  searchModVariable := Quantity;
 end;
 ///////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 
 /////////////////// search Control Variable \\\\\\\\\\\\\\\\\\\
-function searchControlVariable(str : string): integer;
+function searchControlVariable(CodeString : string): integer;
 var
   RegExp, RegExp1 : TPerlRegEx;
-  arr: arrString;
-  count, i, k1, k2 : integer;
-  s : string;
+  arrayControlVariables: arrString;
+  Quantity, i, numberOpeningBrackets, numberClosingBrackets : integer;
+  tempString : string;
 begin
-  count := 0;
+  Quantity := 0;
   i := 0;
-  k1 := 0;
-  k2 := 0;
+  numberOpeningBrackets := 0;
+  numberClosingBrackets := 0;
   RegExp := TPerlRegEx.Create;
 
 //////////////// SWITCH \\\\\\\\\\\\\\\\\\\\\\\\\\\
   RegExp.RegEx := '(?<=\bswitch\b\()\s*[a-zA-Z_]\w*\s*(?=\))';//'(?<=\sfor\s\()\s*(int|float|short|unsigned|unsigned\s+int)?\s*\w+';//\s*for\s*\(\s*(int|float|short|unsigned)?\s*\w+';//'[\s]*for[\s]*\((int|float|short|unsigned\s+int)?[\s]+[\w]+';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
   if RegExp.Match then
   begin
@@ -225,11 +225,11 @@ begin
       if RegExp1.Match then
       begin
         repeat
-          s := RegExp1.MatchedText;
-          if checkArr(arr, count, s) then
+          tempString := RegExp1.MatchedText;
+          if checkRepeatVariables(arrayControlVariables, Quantity, tempString) then
           begin
-            inc(count);
-            arr[count] := s;
+            inc(Quantity);
+            arrayControlVariables[Quantity] := tempString;
           end;
         until not RegExp1.MatchAgain;
       end;
@@ -250,12 +250,12 @@ begin
       if RegExp1.Match then
       begin
         repeat
-          s := RegExp1.Subject;
-          delete(s, RegExp1.MatchedOffset, RegExp1.MatchedLength);
-          if checkArr(arr, count, s) then
+          tempString := RegExp1.Subject;
+          delete(tempString, RegExp1.MatchedOffset, RegExp1.MatchedLength);
+          if checkRepeatVariables(arrayControlVariables, Quantity, tempString) then
           begin
-            inc(count);
-            arr[count] := s;
+            inc(Quantity);
+            arrayControlVariables[Quantity] := tempString;
           end;
         until not RegExp1.MatchAgain;
       end;
@@ -265,47 +265,47 @@ begin
 
 //////////////// IF \\\\\\\\\\\\\\\\\\\\\\\\\\\
   RegExp.RegEx := '\bif\s*';      //'\bif\s*'; //'((?<=\bif\s\()|(?<=\bif\()).*?(?=\).*?)';
-  RegExp.Subject := str;
-  s := '';
+  RegExp.Subject := CodeString;
+  tempString := '';
   RegExp.Compile;
   if RegExp.Match then
   begin
     repeat
       i := RegExp.MatchedOffset + RegExp.MatchedLength;
-      while (k1 <> k2) or ((k1 = 0) and (k2 = 0)) do
+      while (numberOpeningBrackets <> numberClosingBrackets) or ((numberOpeningBrackets = 0) and (numberClosingBrackets = 0)) do
       begin
-        if str[i] = '(' then
-          inc(k1);
-        if str[i] = ')' then
-          inc(k2);
-        s := s + str[i];
+        if CodeString[i] = '(' then
+          inc(numberOpeningBrackets);
+        if CodeString[i] = ')' then
+          inc(numberClosingBrackets);
+        tempString := tempString + CodeString[i];
         inc(i);
       end;
-      k1 := 0;
-      k2 := 0;
+      numberOpeningBrackets := 0;
+      numberClosingBrackets := 0;
     until not RegExp.MatchAgain;
 
     RegExp1.RegEx := '\b[a-zA-Z_]\w*\s*\(.*?\)';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.Subject;
-        delete(s, RegExp1.MatchedOffset, RegExp1.MatchedLength);
-        RegExp1.Subject := s;
+        tempString := RegExp1.Subject;
+        delete(tempString, RegExp1.MatchedOffset, RegExp1.MatchedLength);
+        RegExp1.Subject := tempString;
       until not RegExp1.MatchAgain;
     end;
 
     RegExp1.RegEx := '(?<!\[)[a-zA-Z_]\w*(?!\])';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.MatchedText;
-        if checkArr(arr, count, s) then
+        tempString := RegExp1.MatchedText;
+        if checkRepeatVariables(arrayControlVariables, Quantity, tempString) then
         begin
-          inc(count);
-          arr[count] := s;
+          inc(Quantity);
+          arrayControlVariables[Quantity] := tempString;
         end;
       until not RegExp1.MatchAgain;
     end;
@@ -314,49 +314,49 @@ begin
 
 //////////////// WHILE \\\\\\\\\\\\\\\\\\\\\\\\\\\
   RegExp.RegEx := '\bwhile\s*';//'((?<=\swhile\s\()|(?<=\swhile\()).*?(?=\))';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
-  s := '';
-  k1 := 0;
-  k2 := 0;
+  tempString := '';
+  numberOpeningBrackets := 0;
+  numberClosingBrackets := 0;
   if RegExp.Match then
   begin
     repeat
-    i := RegExp.MatchedOffset + RegExp.MatchedLength;
-    while (k1 <> k2) or ((k1 = 0) and (k2 = 0)) do
-    begin
-      if str[i] = '(' then
-        inc(k1);
-      if str[i] = ')' then
-        inc(k2);
-      s := s + str[i];
-      inc(i);
-    end;
-    k1 := 0;
-    k2 := 0;
+      i := RegExp.MatchedOffset + RegExp.MatchedLength;
+      while (numberOpeningBrackets <> numberClosingBrackets) or ((numberOpeningBrackets = 0) and (numberClosingBrackets = 0)) do
+      begin
+        if CodeString[i] = '(' then
+          inc(numberOpeningBrackets);
+        if CodeString[i] = ')' then
+          inc(numberClosingBrackets);
+        tempString := tempString + CodeString[i];
+        inc(i);
+      end;
+      numberOpeningBrackets := 0;
+      numberClosingBrackets := 0;
     until not RegExp.MatchAgain;
 
     RegExp1.RegEx := '\b[a-zA-Z_]\w*\s*\(.*?\)';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.Subject;
-        delete(s, RegExp1.MatchedOffset, RegExp1.MatchedLength);
-        RegExp1.Subject := s;
+        tempString := RegExp1.Subject;
+        delete(tempString, RegExp1.MatchedOffset, RegExp1.MatchedLength);
+        RegExp1.Subject := tempString;
       until not RegExp1.MatchAgain;
     end;
 
     RegExp1.RegEx := '(?<!\[)[a-zA-Z_]\w*(?!\])';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.MatchedText;
-        if checkArr(arr, count, s) then
+        tempString := RegExp1.MatchedText;
+        if checkRepeatVariables(arrayControlVariables, Quantity, tempString) then
         begin
-          inc(count);
-          arr[count] := s;
+          inc(Quantity);
+          arrayControlVariables[Quantity] := tempString;
         end;
       until not RegExp1.MatchAgain;
     end;
@@ -366,97 +366,97 @@ begin
 
 //////////////// ? : \\\\\\\\\\\\\\\\\\\\\\\\\\\
   RegExp.RegEx := '\?';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
-  s := '';
-  k1 := 0;
-  k2 := 0;
+  tempString := '';
+  numberOpeningBrackets := 0;
+  numberClosingBrackets := 0;
   if RegExp.Match then
   begin
     repeat
-    i := RegExp.MatchedOffset - RegExp.MatchedLength;
-    while (k1 <> k2) or ((k1 = 0) and (k2 = 0)) do
-    begin
-      if str[i] = '(' then
-        inc(k1);
-      if str[i] = ')' then
-        inc(k2);
-      s := str[i] + s;
-      dec(i);
-    end;
-    k1 := 0;
-    k2 := 0;
+      i := RegExp.MatchedOffset - RegExp.MatchedLength;
+      while (numberOpeningBrackets <> numberClosingBrackets) or ((numberOpeningBrackets = 0) and (numberClosingBrackets = 0)) do
+      begin
+        if CodeString[i] = '(' then
+          inc(numberOpeningBrackets);
+        if CodeString[i] = ')' then
+          inc(numberClosingBrackets);
+        tempString := CodeString[i] + tempString;
+        dec(i);
+      end;
+      numberOpeningBrackets := 0;
+      numberClosingBrackets := 0;
     until not RegExp.MatchAgain;
 
     RegExp1.RegEx := '\b[a-zA-Z_]\w*\s*\(.*?\)';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.Subject;
-        delete(s, RegExp1.MatchedOffset, RegExp1.MatchedLength);
-        RegExp1.Subject := s;
+        tempString := RegExp1.Subject;
+        delete(tempString, RegExp1.MatchedOffset, RegExp1.MatchedLength);
+        RegExp1.Subject := tempString;
       until not RegExp1.MatchAgain;
     end;
 
     RegExp1.RegEx := '(?<!\[)[a-zA-Z_]\w*(?!\])';
-    RegExp1.Subject := s;
+    RegExp1.Subject := tempString;
     if RegExp1.Match then
     begin
       repeat
-        s := RegExp1.MatchedText;
-        if checkArr(arr, count, s) then
+        tempString := RegExp1.MatchedText;
+        if checkRepeatVariables(arrayControlVariables, Quantity, tempString) then
         begin
-          inc(count);
-          arr[count] := s;
+          inc(Quantity);
+          arrayControlVariables[Quantity] := tempString;
         end;
       until not RegExp1.MatchAgain;
     end;
   end;
 //////////////// ? : \\\\\\\\\\\\\\\\\\\\\\\\\\\
 
-  searchControlVariable := count;
+  searchControlVariable := Quantity;
 end;
 /////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 
 /////////////////// search Parazit Variables \\\\\\\\\\\\\\\\\\\\
-procedure check(arr: arrString; count: integer; str : string; var num : arrInteger);
+procedure checkNumberOfMeetingsVariables(arrayParazitVariables: arrString; Quantity: integer; CodeString : string; var variableNumberMeetings : arrInteger);
 var
   RegEx : TPerlRegEx;
   i : integer;
 begin
   RegEx := TPerlRegEx.Create;
-  RegEx.Subject := str;
-  for i:=1 to count do
+  RegEx.Subject := CodeString;
+  for i:=1 to Quantity do
   begin
-    num[i] := 0;
-    RegEx.RegEx := '\b' + arr[i] + '\b';
+    variableNumberMeetings[i] := 0;
+    RegEx.RegEx := '\b' + arrayParazitVariables[i] + '\b';
     RegEx.Compile;
     if RegEx.Match then
     begin
       repeat
-        inc(num[i]);
+        inc(variableNumberMeetings[i]);
       until not RegEx.MatchAgain;
-      dec(num[i]);
+      dec(variableNumberMeetings[i]);
     end;
   end;
 end;
 
-function searchParazitVariable(str : string): integer;
+function searchParazitVariable(CodeString : string): integer;
 var
   RegExp, RegExp2, RegExp3: TPerlRegEx;
-  i, count, number: integer;
-  str1 : string;
-  arr : arrString;
-  num : arrInteger;
+  i, Quantity, NumberParazitVariables, LengthDeleteRow: integer;
+  tempString : string;
+  arrayParazitVariables : arrString;
+  variableNumberMeetings : arrInteger;
 begin
-  count := 0;
-  number := 0;
+  Quantity := 0;
+  NumberParazitVariables := 0;
   RegExp := TPerlRegEx.Create;
   RegExp.RegEx := '(?<=\sint|float|short|unsigned|unsigned\sint|char|bool|double)[\w\,\s=\+\-\/\*\[\]]+\;';  //'\s(?:int|float|short|unsigned|unsigned\s+int|char|bool|double)\s[\w\,\s=\+\-\/\*\[\]]+\;';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
   if RegExp.Match then
   begin
@@ -465,49 +465,49 @@ begin
     RegExp2.Compile;
     repeat
       RegExp2.Subject := RegExp.MatchedText;
-      str1 := RegExp.MatchedText;
-      i := 0;
+      tempString := RegExp.MatchedText;
+      LengthDeleteRow := 0;
       if RegExp2.Match then
       begin
         repeat
-          delete(str1, RegExp2.MatchedOffset - i, RegExp2.MatchedLength);
-          i := i + RegExp2.MatchedLength;
+          delete(tempString, RegExp2.MatchedOffset - LengthDeleteRow, RegExp2.MatchedLength);
+          LengthDeleteRow := LengthDeleteRow + RegExp2.MatchedLength;
         until not RegExp2.MatchAgain;
       end;
         RegExp3 := TPerlRegEx.Create;
         RegExp3.RegEx := '\b[a-zA-Z_]\w*\b';
-        RegExp3.Subject := str1;
+        RegExp3.Subject := tempString;
         RegExp3.Compile;
         if RegExp3.Match then
         begin
           repeat
-            inc(count);
-            arr[count] := RegExp3.MatchedText;
+            inc(Quantity);
+            arrayParazitVariables[Quantity] := RegExp3.MatchedText;
           until not RegExp3.MatchAgain;
         end;
     until not RegExp.MatchAgain;
   end;
-  check(arr, count, str, num);
-  for i:= 1 to count do
-    if num[i] = 0 then
-      inc(number);
-  searchParazitVariable := number;
+  checkNumberOfMeetingsVariables(arrayParazitVariables, Quantity, CodeString, variableNumberMeetings);
+  for i:= 1 to Quantity do
+    if variableNumberMeetings[i] = 0 then
+      inc(NumberParazitVariables);
+  searchParazitVariable := NumberParazitVariables;
 end;
 ////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 
 /////////////////// search Variables To Output and Calc. \\\\\\\\\\\\\\\\\\\\
-function searchVariableForOutput(str: string; arrModVar : arrString; countArrModVar : integer): integer;
+function searchVariableForOutput(CodeString: string; arrayModVariable : arrString; countArrayModVariable : integer): integer;
 var
   RegExp, RegExp1 : TPerlRegEx;
-  s : string;
-  count : integer;
-  arr : arrString;
+  nameVariable : string;
+  Quantity : integer;
+  arrayVariableForOutput : arrString;
 begin
-  count := 0;
+  Quantity := 0;
   RegExp := TPerlRegEx.Create;
   RegExp.RegEx := '\s*(\=|\+\=|\*\=|\-\=|\/\=)[\w\s\\\/\*\+\*\-\(\)]*\;';
-  RegExp.Subject := str;
+  RegExp.Subject := CodeString;
   RegExp.Compile;
   if RegExp.Match then
   begin
@@ -519,17 +519,17 @@ begin
       if RegExp1.Match then
       begin
         repeat
-          s := RegExp1.MatchedText;
-          if (checkArr(arrModVar, countArrModVar, s)) and (checkArr(arr, count, s)) then
+          nameVariable := RegExp1.MatchedText;
+          if (checkRepeatVariables(arrayModVariable, countArrayModVariable, nameVariable)) and (checkRepeatVariables(arrayVariableForOutput, Quantity, nameVariable)) then
           begin
-            inc(count);
-            arr[count] := s;
+            inc(Quantity);
+            arrayVariableForOutput[Quantity] := nameVariable;
           end;
         until not RegExp1.MatchAgain;
       end;
     until not RegExp.MatchAgain;
   end;
-  searchVariableForOutput := count;
+  searchVariableForOutput := Quantity;
 end;
 ////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
@@ -537,9 +537,9 @@ end;
 
 procedure TForm1.btnRunClick(Sender: TObject);
 var
-  i, count, countArrModVar: integer;
-  str: string;
-  arr, arrModVar: arrString;
+  i, countSubroutines, countArrayModVariable: integer;
+  CodeString: string;
+  arraySubroutines, arrayModVariable: arrString;
   P, M, C, T: integer;
   Q : Extended;
 begin
@@ -547,22 +547,22 @@ begin
   mmoOutput.Clear;
   P := 0; M := 0; C := 0; T := 0; Q := 0;
 
-  readFromFile(str);
-  deleteString(str);
-  deleteComments1(str);
+  readFromFile(CodeString);
+  deleteString(CodeString);
+  deleteComments1(CodeString);
 
-  for i:= 1 to length(str) do
-    if (str[i] = #13) or (str[i] = #10) then
-      str[i] := #0;
-  deleteComments2(str);
-  breakingSubroutines(str, arr, count);
+  for i:= 1 to length(CodeString) do
+    if (CodeString[i] = #13) or (CodeString[i] = #10) then
+      CodeString[i] := #0;
+  deleteComments2(CodeString);
+  breakingSubroutines(CodeString, arraySubroutines, countSubroutines);
 
-  for i:= 1 to count do
+  for i:= 1 to countSubroutines do
   begin
-    M := M + searchModVariable(arr[i], arrModVar, countArrModVar);
-    P := P + searchVariableForOutput(arr[i], arrModVar, countArrModVar);
-    T := T + searchParazitVariable(arr[i]);
-    C := C + searchControlVariable(arr[i]);
+    M := M + searchModVariable(arraySubroutines[i], arrayModVariable, countArrayModVariable);
+    P := P + searchVariableForOutput(arraySubroutines[i], arrayModVariable, countArrayModVariable);
+    T := T + searchParazitVariable(arraySubroutines[i]);
+    C := C + searchControlVariable(arraySubroutines[i]);
   end;
 
   Q := coeffP * P + coeffM * M + coeffC * C + coeffT * T;
